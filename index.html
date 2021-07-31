@@ -1,0 +1,229 @@
+﻿<table>
+<tr>
+<td>
+
+<div id=viewport>
+  <div id=camera>
+    <div id=scene>
+    
+      <div id=floor>top left</div>
+    
+    </div>
+  </div>
+</div>
+
+<td>
+
+
+Green <button onclick="token='a',piece='cube v1'" selected>cube</button>
+<button onclick="token='b',piece='slope l v1'">slope left</button>
+<button onclick="token='c',piece='slope u v1'">slope up</button>
+<button onclick="token='d',piece='slope r v1'">slope right</button>
+<button onclick="token='e',piece='slope d v1'">slope down</button>
+<br>
+Yellow <button onclick="token='f',piece='cube v2'">cube</button>
+<button onclick="token='g',piece='slope l v2'">slope left</button>
+<button onclick="token='h',piece='slope u v2'">slope up</button>
+<button onclick="token='i',piece='slope r v2'">slope right</button>
+<button onclick="token='j',piece='slope d v2'">slope down</button>
+<br>
+Grey <button onclick="token='k',piece='cube v3'">cube</button>
+<button onclick="token='l',piece='slope l v3'">slope left</button>
+<button onclick="token='m',piece='slope u v3'">slope up</button>
+<button onclick="token='n',piece='slope r v3'">slope right</button>
+<button onclick="token='o',piece='slope d v3'">slope down</button>
+<br>
+Others 
+<button onclick="token='p',piece='cube v4'">water cube</button>
+<button onclick="token='q',piece='plane fence'">plane fence</button>
+<button onclick="token='r',piece='sprite tree'">sprite tree</button>
+<button onclick="token='0',piece=''">nothing</button>
+
+<br><br>
+Map
+<br>
+<textarea id=out readonly spellcheck=false>0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000
+0000000000000000000000000</textarea>
+</table>
+<style>
+/* UI */
+td{vertical-align:top;font-family:arial;padding:0 20px 0 0}
+textarea{width:305px;height:310px;line-height:12px;font-size:16px;letter-spacing:3px}
+
+/* 3D scene */
+#viewport{width:700px;height:700px;overflow:hidden;border:1px solid;position:relative;perspective:500px}
+#viewport *{transform-style:preserve-3d;box-sizing:border-box}
+#camera{width:0;height:0;position:absolute;top:50%;left:50%}
+#scene{position:fixed;width:5020px;height:5020px;transform-origin:50% 50%;transform:translate3D(-50%,-50%,-5000px)rotateX(45deg)}
+#floor{position:fixed;width:5020px;height:5020px;transform-origin:50% 50%;background:linear-gradient(#aaa 20px,#0000 20px),linear-gradient(90deg,#aaa 20px,#0000 20px);background-size:200px 200px;font:200px arial;color:#aaa}
+
+/* A piece is either a cube, a slope, a plane or a sprite */
+/* Cubes and slopes have 4 color varieties: v1 to v4 */
+/* Sprites are planes that always face the camera */
+
+/* common to all pieces and faces */
+.piece{pointer-events:none;position:absolute;width:200px;height:200px}
+.face{width:200px;height:200px;position:fixed;border:10px solid #000;backface-visibility:hidden;}
+
+/* piece rotation */
+.l{transform:rotateZ(90deg)}
+.u{transform:rotateZ(180deg)}
+.r{transform:rotateZ(-90deg)}
+
+/* common to all piece faces */
+.up{transform:translateZ(200px)}
+.left{transform:rotateY(-90deg)translate3D(100px,0,100px)}
+.right{transform:rotateY(90deg)translate3D(-100px,0,100px)}
+.front{transform:rotateX(-90deg)translate3D(0,-100px,100px)}
+.back{transform:rotateX(90deg)translate3D(0,100px,100px)}
+.down{transform:rotateX(180deg)}
+
+/* specific to slope faces */
+.slope .up{height:282px;transform:translate3D(0,-41px,100px)rotateX(-45deg)}
+.slope .left{clip-path:path('M200 0L0 200L0 0Z')}
+.slope .right{clip-path:path('M0 0L200 200L200 0Z')}
+
+/* varieties */
+.v1 *{background:#393}
+.v1 .up{background:#5b5}
+.v2 *{background:#fd6}
+.v2 .up{background:#fe8}
+.v3 *{background:#bbb}
+.v3 .up{background:#ddd}
+.v4 *{background:#77F8}
+
+/* plane, sprite */
+.plane,.sprite{font-size:200px}
+.plane *,.sprite *{transform-origin:50% 100%;transform:translateY(-100px)rotateX(-90deg)}
+
+.fence{font-size:160px}
+</style>
+
+<script>
+// Firefox detection
+fx = navigator.userAgent.includes("Firefox");
+
+// Map
+map = Array(25*25).fill(0);
+
+// Mouse globals
+mousedown = 0;
+rx = 45;
+rz = 0;
+mousex = 0;
+mousey = 0;
+
+// Mouse down/up: handle right button
+onmousedown = onmouseup = e => {
+  if(e.which == 3){
+    mousedown ^= 1;
+    mousex = e.pageX;
+    mousey = e.pageY;
+    //console.log(mousex, mousey);
+    e.preventDefault();
+    e.stopPropagation();
+    return false; 
+  }
+}
+
+// Right click: prevent context menu from appearing
+oncontextmenu = e => {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}
+
+// Mouse move: update camera
+viewport.onmousemove = e => {
+ if(mousedown){
+  rz += (e.pageX - mousex) / 5;
+  rx += (e.pageY - mousey) / 5;
+  if(rx > 88) rx = 88;
+  if(rx < 0) rx = 0;
+  
+  mousex = e.pageX;
+  mousey = e.pageY;
+  
+  //console.log(rz, rx);
+  
+  scene.style.transform = `translate3D(-50%,-50%,-5000px)rotateX(${rx}deg)rotateZ(${rz}deg)`;
+  updateSprites();
+ }
+}
+
+// Left click: add item in the scene
+scene.onclick = e => {
+  x = (~~((fx ? e.layerX : e.offsetX) / 200));
+  y = (~~((fx ? e.layerY : e.offsetY) / 200));
+  if(x >= 0 && x <= 24 && y >= 0 && y <= 24){
+    drawpiece(x, y, 0);
+    map[y*25+x] = token;
+    out.innerHTML = map.join("")
+    updateSprites();
+  }
+}
+
+// Current piece
+piece = "cube v1";
+token = "a";
+
+// Draw current piece at given coordinates
+drawpiece = (x, y, z) => {
+  old = document.querySelector(`[x='${x}'][y='${y}'][z='${z}']`);
+  if(old){
+    old.remove();
+  }
+  if(piece){
+    html = `<div class="piece ${piece}" x=${x} y=${y} z=${z} style='left:${x*200}px;top:${y*200}px'>`;
+    if(piece.includes("cube") || piece.includes("slope")){
+      html += `<div class="face up"></div>`;
+      html += `<div class="face left"></div>`;
+      html += `<div class="face right"></div>`;
+      if(piece.includes("cube")){
+        html += `<div class="face front"></div>`;
+      }
+      html += `<div class="face back"></div>`;
+      html += `<div class="face down"></div>`;
+    }
+    else if(piece.includes("tree")){
+      html += `<div>🌳`;
+    }
+    else if(piece.includes("fence")){
+      html += `<div>🚧`;
+    }
+    scene.insertAdjacentHTML("beforeEnd", html);
+  }
+}
+
+// Make all sprites face the camera
+updateSprites = () => {
+  sprites = document.querySelectorAll(".sprite div");
+  for(sprite of sprites){
+    sprite.style.transform = `translateY(-100px)rotateZ(${-rz}deg)rotateX(${-rx}deg)`;
+  }
+}
+ 
+</script>
