@@ -8,10 +8,13 @@
     
       <div id=floor></div>
       <div id=grid></div>
+      <div id=cursor></div>
     
     </div>
   </div>
 </div>
+
+<p>Layer: <input id=Z type=number value=0 min=0 max=30 size=2>
 
 <td>
 Scene size:
@@ -44,7 +47,7 @@ Others
 <button onclick="preview(token='#')">nothing</button>
 
 <p>Preview
-
+<br>
 <div id=viewport2>
   <div id=camera2>
     <div id=scene2>
@@ -56,24 +59,26 @@ Others
 <p>
 Map
 <br>
+<br>
 <textarea id=out readonly spellcheck=false></textarea>
 </table>
 <style>
 /* UI */
 td{vertical-align:top;font-family:arial;padding:0 20px 0 0}
-textarea{width:340px;height:340px;line-height:12px;font-size:16px;letter-spacing:3px}
+textarea{width:340px;height:220px;line-height:12px;font-size:16px;letter-spacing:3px}
 
 /* 3D scene */
-#viewport{width:700px;height:700px;overflow:hidden;border:1px solid;position:relative;perspective:500px}
+#viewport{width:700px;height:600px;overflow:hidden;border:1px solid;position:relative;perspective:500px}
 #viewport2{width:100px;height:100px;overflow:hidden;border:1px solid;position:relative;perspective:500px}
 #viewport *{transform-style:preserve-3d;box-sizing:border-box}
 #viewport2 *{transform-style:preserve-3d;box-sizing:border-box}
 #camera{width:0;height:0;position:absolute;top:50%;left:50%}
 #camera2{width:0;height:0;position:absolute;top:100%;left:50%}
-#scene{position:fixed;width:5020px;height:5020px;transform:translate3D(-50%,-50%,-5000px)rotateX(45deg)}
+#scene{position:fixed;width:2020px;height:2020px;transform:translate3D(-50%,-50%,-2000px)rotateX(45deg)}
 #scene2{position:fixed;width:200px;height:200px;transform:translate3D(-50%,-50%,-2000px)rotateX(45deg)}
-#grid{position:fixed;width:5020px;height:5020px;background:linear-gradient(#777 20px,#0000 20px),linear-gradient(90deg,#777 20px,#0000 20px);background-size:200px 200px;font:200px arial;color:#aaa;transform:translateZ(1px)}
-#floor{position:fixed;width:5020px;height:5020px;background:#5b5}
+#grid{position:fixed;width:2020px;height:2020px;background:linear-gradient(#777 20px,#0000 20px),linear-gradient(90deg,#777 20px,#0000 20px);background-size:200px 200px;font:200px arial;color:#aaa;transform:translateZ(1px)}
+#floor{position:fixed;width:2020px;height:2020px;background:#5b5}
+#cursor .face{border:10px solid #0008}
 
 /* A piece is either a cube, a slope, a plane or a sprite */
 /* Cubes and slopes have 4 color varieties: v1 to v4 */
@@ -114,18 +119,22 @@ textarea{width:340px;height:340px;line-height:12px;font-size:16px;letter-spacing
 /* Specific to corner2 (angle) */
 .s6 .left{clip-path:path('M200 0L0 200L0 0Z')}
 .s6 .back{clip-path:path('M200 0L0 0L0 200Z')}
-.s6 .front{height:282px;clip-path:path('M0 0L200 282L0 282Z');transform:rotateX(-90deg)translate3D(0px,-100px,-40px)rotateX(45deg)}
+.s6 .up{height:282px;clip-path:path('M0 0L200 282L0 282Z');transform:rotateX(-90deg)translate3D(0px,-100px,-40px)rotateX(45deg)}
 .s6 .right{width:282px;clip-path:path('M0 0L282 200L282 0Z');height:200px;transform: rotateY(90deg)translate3D(-100px,0px,-42px)rotateY(-45deg)}
 
 /* textures */
 .t0 *{background:#393}
-.t0 .up,.s6.t0 .front,.s6.t0 right{background:#5b5}
+.t0 .up{background:#5b5}
+#cursor .t0 *{background:#5b58}
 .t1 *{background:#fd6}
-.t1 .up,.s6.t1 .front,.s6.t1 right{background:#fe8}
+.t1 .up{background:#fe8}
+#cursor .t1 *{background:#fe88}
 .t2 *{background:#bbb}
-.t2 .up,.s6.t2 .front,.s6.t2 right{background:#ddd}
+.t2 .up{background:#ddd}
+#cursor .t2 *{background:#ddd8}
 .t3 *{background:#77f8}
-.t3 .up,.s6.t3 .front,.s6.t3 right{background:#ddf8}
+.t3 .up{background:#ddf8}
+#cursor .t3 *{background:#ddf4}
 
 /* plane, sprite */
 .plane,.sprite{font-size:200px}
@@ -193,7 +202,8 @@ piece = 2;
 token = " ";
 w = 10;
 h = 10;
-map = Array(w*h).fill('#');
+x = y = z = 0;
+map = [Array(w*h).fill('#')];
 
 // Firefox detection
 fx = navigator.userAgent.includes("Firefox");
@@ -203,7 +213,12 @@ W.onchange = H.onupdate = H.oninput = () => { h = +H.value; updateMap(); map = A
 
 // Update map
 updateMap = () => {
-  out.innerHTML = map.join("").match(new RegExp(".{"+h+"}","g")).join("\n");
+  out.innerHTML = "";
+  for(i in map){
+    out.innerHTML += "Layer " + i + ":\n\n";
+    out.innerHTML += map[i].join("").match(new RegExp(".{"+w+"}","g")).join("\n");
+    out.innerHTML += "\n\n";
+  }
   scene.style.width = floor.style.width = grid.style.width = w * 200 + 20 + "px";
   scene.style.height = floor.style.height = grid.style.height = h * 200 + 20 + "px";
   moveScene(rx, rz);
@@ -211,7 +226,8 @@ updateMap = () => {
 
 // Move the scene
 moveScene = (rx, rz) => {
-  scene.style.transform = `translate3D(-50%,-50%,-${Math.max(w*200,h*200)}px)rotateX(${rx}deg)rotateZ(${rz}deg)`;
+  scene.style.transformOrigin = `50% 50% ${z*200}px`;
+  scene.style.transform = `translate3D(-50%,-50%,-${Math.max(w*200,h*200)+z*200}px)rotateX(${rx}deg)rotateZ(${rz}deg)`;
   scene2.style.transform = `translate3D(-50%,-50%,-2000px)rotateX(${rx}deg)rotateZ(${rz}deg)`;
 }
 
@@ -242,7 +258,7 @@ oncontextmenu = e => {
   return false;
 }
 
-// Mouse move: update camera
+// Mouse move: update camera if right button is pressed
 viewport.onmousemove = e => {
  if(mousedown){
   rz += (e.pageX - mousex) / 5;
@@ -264,20 +280,34 @@ viewport.onmousemove = e => {
 scene.onclick = e => {
   x = (~~((fx ? e.layerX : e.offsetX) / 200));
   y = (~~((fx ? e.layerY : e.offsetY) / 200));
-  z = 0;
-  if(x >= 0 && x <= 24 && y >= 0 && y <= 24){
+  if(x >= 0 && x < w && y >= 0 && y < h){
     old = document.querySelector(`#scene [x='${x}'][y='${y}'][z='${z}']`);
+    console.log(old);
     if(old){
       old.remove();
     }
-    scene.insertAdjacentHTML("beforeEnd", drawpiece(x, y, 0));
+    scene.insertAdjacentHTML("beforeEnd", drawpiece(x, y, z));
     console.log(rotation, texture, piece, token);
-    map[y*w+x] = token;
+    map[z][y*w+x] = token;
     updateMap()
     updateSprites();
   }
   W.disabled = true;
   H.disabled = true;
+}
+
+scene.onmousemove = e => {
+  x = (~~((fx ? e.layerX : e.offsetX) / 200));
+  y = (~~((fx ? e.layerY : e.offsetY) / 200));
+  if(x >= 0 && x < w && y >= 0 && y < h){
+    cursor.innerHTML = drawpiece(x, y, z, 1);
+    updateMap();
+    updateSprites();
+  }
+}
+
+scene.onmouseout = e => {
+  cursor.innerHTML = "";
 }
 
 // Preview current token
@@ -299,18 +329,18 @@ preview = (t) => {
 }
 
 // Return HTML code for current piece, at the given coordinates
-drawpiece = (x, y, z) => {
+drawpiece = (x, y, z, cursor) => {
   
   // pieces: 2: cube, 3: slope, 4: 45° wall, 5: slope corner flat, 6: slope corner angled, 7: reverse corner flat
   // extra pieces: 1: water cube, 2: tree, 3: fence
   
-  html = `<div class="piece s${piece} r${rotation} t${texture} e${extrapiece}" x=${x} y=${y} z=${z} style='left:${x*200}px;top:${y*200}px'>`;
+  html = `<div class="piece s${piece} r${rotation} t${texture} e${extrapiece}" ${cursor || `x=${x} y=${y} z=${z}`} style='transform:translate3d(${x*200}px,${y*200}px,${z*200}px)rotateZ(${rotation*90}deg)'>`;
 
   if(piece || extrapiece == 1){
-    if(piece != 6) html += `<div class="face up"></div>`;
+    html += `<div class="face up"></div>`;
     html += `<div class="face left"></div>`;
     if(piece != 4 && piece != 5) html += `<div class="face right"></div>`;
-    if(piece != 3 && piece != 5) html += `<div class="face front"></div>`;
+    if(piece != 3 && piece != 5 && piece != 6) html += `<div class="face front"></div>`;
     html += `<div class="face back"></div>`;
   }
   
@@ -331,6 +361,16 @@ updateSprites = () => {
   for(sprite of sprites){
     sprite.style.transform = `translateY(-100px)rotateZ(${-rz}deg)rotateX(${-rx}deg)`;
   }
+}
+
+// Change grid height
+Z.onchange = Z.onupdate = Z.oninput = e => {
+  z = Z.value;
+  if(!map[z]){
+    map[z] = Array(w*h).fill('#');
+  }
+  grid.style.transform = `translateZ(${z*200+1}px)`;
+  updateMap();
 }
 
 updateMap();
