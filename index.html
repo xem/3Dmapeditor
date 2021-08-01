@@ -208,8 +208,8 @@ map = [Array(w*h).fill('#')];
 // Firefox detection
 fx = navigator.userAgent.includes("Firefox");
 
-W.onchange = W.onupdate = W.oninput = () => { w = +W.value; updateMap(); map = Array(w*h).fill('#'); }
-W.onchange = H.onupdate = H.oninput = () => { h = +H.value; updateMap(); map = Array(w*h).fill('#'); }
+W.onchange = W.onupdate = W.oninput = () => { w = +W.value; updateMap(); map[0] = Array(w*h).fill('#'); }
+W.onchange = H.onupdate = H.oninput = () => { h = +H.value; updateMap(); map[0] = Array(w*h).fill('#'); }
 
 // Update map
 updateMap = () => {
