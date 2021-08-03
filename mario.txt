@@ -1,0 +1,79 @@
+Shapes encoding (ASCII)
+=======================
+
+Chars 0-31: various shapes
+
+    0000000: \0  reserved
+    0000001: �   water
+    0000010: �   cascade
+    0000011: �   lava
+    0000010: �   lava cascade
+    0000011: �   pole
+    0000100: �   flag
+    0000101: �   bomb
+    0000110: �   rooftop  
+    0000111: \t  pyramid top
+    0001010: \n  cannon
+    0001011: �   big slope front
+    0001100: �   big slope back
+    0001101: \r  cloud
+    0001110: �   coin
+    0001111: �   red coin
+    0010000: �   blue coin
+    0010001: �   blue coin 
+    0010010: �   brick block
+    0010011: �   wing block
+    0010100: �   metal block
+    0010101: �   invisibility block
+    0010110: �   signpost
+    0010111: �   chest
+    0011000: �   fog
+    0011001: �   wind
+    0011010: �   stairs up
+    0011011: �   stairs left
+    0011100: �   stairs down
+    0011101: �   stairs right
+    0011110: �   fence horizontal
+    0011111: �   fence vertical
+
+Chars 32-127: 0b0xxxyyzz
+
+- zz (bits 0-1): rotation
+    0°
+    90°
+    180°
+    270°
+
+ - yy (bits 2-3): texture
+    sand
+    grass
+    rock
+    ice
+    brick
+    wood
+    grid
+    red carpet
+    ...
+
+ - xxx (bits 4-6): shape
+    000-001 reserved (chars 0-31)
+    010 cube (if zz == 11)
+    011 slope
+    100 45° wall
+    101 slope corner
+    110 slope corner angled
+    111 reverse corner
+
+ Chars 32-46 (if zz != 11)
+    0100000:    nothing
+    0100001: !  enemy sprite 1
+    0100010: "  enemy sprite 2
+    0100100: $  enemy sprite 3
+    0100101: %  enemy sprite 4
+    0100110: &  enemy sprite 5
+    0101000: (  decoration sprite 1
+    0101001: )  decoration sprite 2
+    0101010: *  decoration sprite 3
+    0101100: ,  decoration sprite 4
+    0101101: -  friend sprite 1
+    0101110: .  friend sprite 2
