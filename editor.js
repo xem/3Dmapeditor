@@ -77,7 +77,6 @@ moveScene = (rx, rz) => {
 }
 
 // Mouse globals
-leftmousedown = 0;
 rightmousedown = 0;
 rx = 45;
 rz = 0;
@@ -88,15 +87,6 @@ mousey = 0;
 onmousedown = onmouseup = e => {
   mousex = e.pageX;
   mousey = e.pageY;
-  if(e.which == 1){
-    leftmousedown ^= 1;
-  }
-  if(e.which == 3){
-    rightmousedown ^= 1;
-    e.preventDefault();
-    e.stopPropagation();
-    return false; 
-  }
 }
 
 // Right click: prevent context menu from appearing
@@ -108,12 +98,12 @@ oncontextmenu = e => {
 
 // Mouse move: update camera if right button is pressed
 viewport.onmousemove = e => {
- if(rightmousedown){
+ if(e.buttons == 2){
   rz += (e.pageX - mousex) / 5;
   rx += (e.pageY - mousey) / 5;
   if(rx > 88) rx = 88;
   if(rx < 0) rx = 0;
-  
+
   mousex = e.pageX;
   mousey = e.pageY;
   moveScene(rx, rz);
@@ -127,7 +117,7 @@ scene.onmousedown = scene.onmousemove = e => {
   x = (~~((fx ? e.layerX : e.offsetX) / 200));
   y = (~~((fx ? e.layerY : e.offsetY) / 200));
   if(x >= 0 && x < w && y >= 0 && y < h){
-    if(leftmousedown || e.which == 1){
+    if(e.buttons == 1){
       old = document.querySelector(`#scene [x='${x}'][y='${y}'][z='${z}']`);
       if(old){
         old.remove();
@@ -168,7 +158,7 @@ preview = (t) => {
 
 // Return HTML code for current piece, at the given coordinates
 drawpiece = (x, y, z, cursor) => {
-  
+
   // pieces: 2: cube, 3: slope, 4: 45° wall, 5: slope corner flat, 6: slope corner angled, 7: reverse corner flat
   // extra pieces: 1: water cube, 2: tree, 3: fence, 35: nothing
   if(extrapiece != 35){
@@ -181,7 +171,7 @@ drawpiece = (x, y, z, cursor) => {
       if(piece != 4 && piece != 5) html += `<div class="face right ${["west","south","east","north"][rotation]}"></div>`;
       html += `<div class="face front ${["south","east","north","west"][rotation]}"></div>`;
     }
-    
+
     else {
       if(extrapiece == "2"){
         html += `<div>🌳`;
