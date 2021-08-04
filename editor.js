@@ -1,16 +1,19 @@
 // pieces encoding (ASCII)
 // =======================
 
-// Chars 0-32: various pieces
-
+// Chars 0-31: various pieces
+//
 //     0000000: \0  reserved
 //     0000001: �   water
 //     0000010: �   tree
 //     0000011: �   fence
 //     ...
-//     0010000: (space) nothing
 //
-// Chars 33-127: 0b0xxxyyzz
+// Char 35: nothing
+//
+//     0100011: #   nothing
+//
+// Chars 32-127: 0b0xxxyyzz
 //
 // - zz (bits 0-1): rotation
 //     0°
@@ -36,7 +39,6 @@
 //     110 slope corner angled
 //     111 pyramid
 
-
 // Globals
 rotation = 0;
 texture = 0;
@@ -55,13 +57,13 @@ W.onchange = H.onupdate = H.oninput = () => { h = +H.value; updateMap(); map[0] 
 
 // Update map
 updateMap = () => {
-  out.innerHTML = "map = [\n\n";
+  out.innerHTML = "map = {\n  w: " + w + ",\n  h: " + h + ",\n  layers: [\n\n";
   for(i in map){
-    out.innerHTML += "// Layer " + i + ":\n\n'";
-    out.innerHTML += map[i].join("").match(new RegExp(".{"+w+"}","g")).join("'+\n'");
+    out.innerHTML += "  // Layer " + i + ":\n\n  '";
+    out.innerHTML += map[i].join("").match(new RegExp(".{"+w+"}","g")).join("'+\n  '");
     out.innerHTML += "',\n\n";
   }
-  out.innerHTML += "]";
+  out.innerHTML += "  ]\n}";
   scene.style.width = floor.style.width = grid.style.width = w * 200 + 20 + "px";
   scene.style.height = floor.style.height = grid.style.height = h * 200 + 20 + "px";
   moveScene(rx, rz);

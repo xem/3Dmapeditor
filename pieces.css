@@ -1,0 +1,85 @@
+/* A piece is either a 3D shape (s2 - s7) or a plane / sprite / special object (e1 - e31) */
+/* Cubes and slopes have 4 color varieties: v1 to v4 */
+/* Sprites are planes that always face the camera */
+
+/* common to all pieces and faces */
+.piece{pointer-events:none;position:absolute;width:200px;height:200px}
+.face{width:200px;height:200px;position:fixed;font-size:100px;transform-origin:50% 100%;backface-visibility:hidden}
+
+/* piece rotation */
+.r1{transform:rotateZ(90deg)}
+.r2{transform:rotateZ(180deg)}
+.r3{transform:rotateZ(-90deg)}
+
+/* common to all piece faces */
+.up{transform:translateZ(200px)}
+.left{transform:translate3D(-100px,-100px,0)rotateZ(90deg)rotateX(-90deg)}
+.right{transform:translate3D(100px,-100px,0)rotateZ(-90deg)rotateX(-90deg)}
+.front{transform:rotateX(-90deg)}
+.back{transform:translate3D(0,-200px,0)rotateZ(180deg)rotateX(-90deg)}
+.down{transform:rotateX(180deg)}
+
+/* specific to slope */
+.s3 .front{height:282px;transform:translate3D(0,-82px,0)rotateX(-45deg)}
+.s3 .left{clip-path:path('M0 0L200 200L0 200Z')}
+.s3 .right{clip-path:path('M200 0L200 200L0 200Z')}
+
+/* Specific to 45° wall */
+.s4 .front{transform: rotateX(-90deg)translate3D(-42px,0,-100px)rotateY(45deg);width:282px}
+.s4 .up{clip-path:path('M200 0L0 200L0 0Z')}
+
+/* Specific to corner1 (flat) */
+.s5 .left{clip-path:path('M0 0L200 200L0 200Z')}
+.s5 .back{clip-path:path('M200 0L200 200L0 200Z')}
+.s5 .front{transform: translate3D(-48px,-145px,0)rotateZ(-45deg)rotateX(-55deg);width:282px;height:245px;clip-path:path('M0 245L141 0L282 245Z')}
+.s5 .front{transform: translate3D(-48px,-145px,0)rotateZ(-45deg)rotateX(-55deg);width:282px;height:245px;clip-path:path('M0 245L141 0L282 245Z')}
+
+/* Specific to corner2 (angle) */
+.s6 .left{clip-path:path('M0 0L200 200L0 200Z')}
+.s6 .back{clip-path:path('M200 0L200 200L0 200Z')}
+.s6 .front{height:282px;clip-path:path('M0 0L200 282L0 282Z');transform:translate3D(0px,-82px,0px)rotateX(-45deg)}
+.s6 .right{width:282px;clip-path:path('M0 0L282 200L282 0Z');height:200px;transform: rotateY(90deg)translate3D(-100px,0px,-41px)rotateY(-45deg)}
+
+/* Specific to pyramid */
+.s7 .face{height:141px;clip-path:path('M100 0L0 141L200 141Z')}
+.s7 .left{transform:translate3D(-100px,-41px,0)rotateZ(90deg)rotateX(-45deg)}
+.s7 .right{transform:translate3D(100px,-41px,0)rotateZ(-90deg)rotateX(-45deg)}
+.s7 .front{transform:translate3D(0,59px,0)rotateX(-45deg)}
+.s7 .back{transform:translate3D(0,-141px,0px)rotateZ(180deg)rotateX(-45deg)}
+
+/* textures */
+.t0 *{background:#393}
+.t0 .south{background:#5b5}
+.t0 .east,.t0 .west{background:#171}
+.t0 .north{background:#060}
+.t1 *{background:#dd6}
+.t1 .south{background:#ff8}
+.t1 .east,.t1 .west{background:#bb4}
+.t1 .north{background:#aa3}
+.t2 *{background:#bbb}
+.t2 .south{background:#ddd}
+.t2 .east,.t2 .west{background:#999}
+.t2 .north{background:#888}
+.t3 *{background:#77f}
+.t3 .south{background:#ddf}
+.t3 .east,.t3 .west{background:#33f}
+.t3 .north{background:#44f}
+#cursor .face{background:#0008}
+
+/* plane, sprite */
+.plane,.sprite{font-size:200px}
+.plane *,.sprite *{transform-origin:50% 100%;transform:translateY(-100px)rotateX(-90deg)}
+
+/* Extra shapes */
+.s0 * {background: none}
+
+/* Water cube */
+.e1 .face {background:#77f8}
+
+/* Tree */
+.e2, .e3{font-size:200px}
+.e2 *,.e3 *{transform-origin:50% 100%}
+
+/* Fence */
+.e3{font-size:160px}
+.e3 div{transform:translateY(-100px)rotateX(-90deg)}
