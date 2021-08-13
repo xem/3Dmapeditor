@@ -3,4 +3,5 @@
 #viewport *{transform-style:preserve-3d;box-sizing:border-box}
 #camera{width:0;height:0;position:absolute;top:50%;left:50%}
 #scene{position:fixed;transform:translate3D(-50%,-50%,-2000px)rotateX(45deg)}
-#floor{position:fixed;background:#4B4}
+#floor{position:fixed;background:#4B4;backface-visibility:hidden}
+*{pointer-events:all!important}
